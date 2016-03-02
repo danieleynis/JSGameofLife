@@ -50,25 +50,77 @@ $(document).ready(function(){
 		var drawX = Math.ceil(cX/sec);
 		var drawY = Math.ceil(cY/sec);
 		
-		if(array[drawX][drawY] == 1){
+		if(array[drawX-1][drawY-1] == 1){
 			draw(0, drawX, drawY);
-			array[drawX][drawY] = 0;
+			array[drawX-1][drawY-1] = 0;
 		}
 		else{
 			draw(1, drawX, drawY);
-			array[drawX][drawY] = 1;
+			array[drawX-1][drawY-1] = 1;
 		}
 	});
 	
 	$('button').on('click', function(){
-		simStat = 1;
-		while(simStat){
+		var numN;
+		setInterval(function(){
+			for(var i = 0; i < secW; i++){
+				for(var j = 0; j < secH; j++){
+					numN = returnNeighbors(i, j);
+					if(array[i][j]){
+						if((numN < 2) || (numN > 3))
+							array2[i][j] = 0;
+						else
+							array2[i][j] = 1;
+					}
+					else if(!array[i][j]){
+						if((numN == 3))
+							array2[i][j] = 1;
+						else
+							array2[i][j] = 0;
+					}
+				}
+			}
 			
-		}
+			for(var i = 0; i < secW; i++){
+				for(var j = 0; j < secH; j++){
+					draw(array2[i][j], i+1, j+1);
+				}
+			}
+			
+			array = JSON.parse(JSON.stringify(array2));
+			
+		}, 200);
 	});
 	
 	var returnNeighbors = function(x, y){
+		var liveN = 0;
+		var YB = y-1;
+		var YT = y+1;
+		var XB = x-1;
+		var XT = x+1;
 		
+		if(!(YB < 0)){
+			if(array[x][y-1]) liveN++;
+			if(!(XB < 0))
+				if(array[x-1][y-1]) liveN++;
+			if(!(XT == secW))
+				if(array[x+1][y-1]) liveN++;
+		}
+		
+		if(!(YT == secH)){
+			if(array[x][y+1]) liveN++;
+			if(!(XB < 0))
+				if(array[x-1][y+1]) liveN++;
+			if(!(XT == secW))
+				if(array[x+1][y+1]) liveN++;
+		}
+		
+		if(!(XB < 0))
+			if(array[x-1][y]) liveN++;
+		if(!(XT == secW))
+			if(array[x+1][y]) liveN++;
+		
+		return liveN;
 	}
 	
 	var draw = function(state, x, y){
